@@ -1,0 +1,110 @@
+{
+  "server": [
+    {
+      "serverID": 1,
+      "name": "Golang",
+      "users": [
+        {
+          "email": "user1@test.com",
+          "name": "Berry"
+        },
+        {
+          "email": "user2@test.com",
+          "name": "Tom"
+        },
+        {
+          "email": "user3@test.com",
+          "name": "Alex"
+        }
+      ],
+      "channels": [
+        {
+          "name": "公告",
+          "record": [
+            {
+              "time": "2024-06-25 17:40",
+              "speaker": "user1@test.com",
+              "content": "歡迎來到Golang伺服器"
+            },
+            {
+              "time": "2024-06-25 17:41",
+              "speaker": "user1@test.com",
+              "content": "版規..."
+            },
+            {
+              "time": "2024-06-25 17:45",
+              "speaker": "user1@test.com",
+              "content": "選擇身分組..."
+            }
+          ]
+        },
+        {
+          "name": "討論區",
+          "record": [
+            {
+              "time": "2024-06-26 08:00",
+              "speaker": "user2@test.com",
+              "content": "我要怎麼處理這個錯誤..."
+            },
+            {
+              "time": "2024-06-26 08:30",
+              "speaker": "user1@test.com",
+              "content": "嘗試加入這行程式..."
+            },
+            {
+              "time": "2024-06-26 09:42",
+              "speaker": "user3@test.com",
+              "content": "也可以改用這個方法..."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "serverID": 2,
+      "name": "PC",
+      "users": [
+        {
+          "email": "user1@test.com",
+          "name": "Berry"
+        },
+        {
+          "email": "user2@test.com",
+          "name": "Tom"
+        }
+      ],
+      "channels": [
+        {
+          "name": "大廳",
+          "record": [
+            {
+              "time": "2024-06-27 08:40",
+              "speaker": "user1@test.com",
+              "content": "這邊提供電腦零組件交流，大家有問題都可以發問..."
+            },
+            {
+              "time": "2024-06-27 08:42",
+              "speaker": "user2@test.com",
+              "content": "笑死，幹嘛創這個"
+            }
+          ]
+        },
+        {
+          "name": "菜單健檢",
+          "record": [
+            {
+              "time": "2024-06-29 20:00",
+              "speaker": "user2@test.com",
+              "content": "R5-7500+4060這台35K OK嗎?"
+            },
+            {
+              "time": "2024-06-29 09:30",
+              "speaker": "user1@test.com",
+              "content": "我是覺得有點貴..."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
