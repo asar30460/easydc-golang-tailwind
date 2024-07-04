@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"server/util"
 	"strconv"
 	"time"
@@ -64,13 +65,16 @@ func (s* service) Login (ctx context.Context, req *LoginUserReq) (*LoginUserRes,
 	defer cancel()
 
 	u, err := s.repo.GetUserByEmail(ctxCancel, req.Email)
+
+	// 若是該Eamil尚未註冊，則呼叫CreateUser進行註冊，註冊完後繼續登入流程
 	if err != nil {
-		return &LoginUserRes{}, err
+		fmt.Println(err)
+		return &LoginUserRes{}, fmt.Errorf("this email hasn't been registered")
 	}
 
 	err = util.CheckPasswordHash(req.Password, u.Password)
 	if err != nil {
-		return &LoginUserRes{}, err
+		return &LoginUserRes{}, fmt.Errorf("invalid password")
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, MyJWTClaims{

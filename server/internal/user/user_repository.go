@@ -42,8 +42,17 @@ func (r *respository) GetUserByEmail(ctx context.Context, email string) (*User, 
 	u := User{}
 	query := "SELECT user_id, email, user_name, password FROM user WHERE email = ?"
 	if err := r.db.QueryRowContext(ctx, query, email).Scan(&u.ID, &u.Email, &u.Username, &u.Password); err != nil {
-		fmt.Println("Error when get user by email. ", err)
-		return &User{}, nil
+		return &User{}, err
+	}
+
+	return &u, nil
+}
+
+func (r *respository) GetUser(ctx context.Context, email string) (*User, error) {
+	u := User{}
+	query := "SELECT user_id, email, user_name, password FROM user WHERE email = ?"
+	if err := r.db.QueryRowContext(ctx, query, email).Scan(&u.ID, &u.Email, &u.Username, &u.Password); err != nil {
+		return &User{}, err
 	}
 
 	return &u, nil

@@ -3,21 +3,28 @@ import { useNavigate } from "react-router-dom";
 import { Button, Input } from "@material-tailwind/react";
 import { API_URL } from "../../../constants";
 
-const Login = () => {
+const LoginOrRegister = () => {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [resHint, setResHint] = useState("");
+  // 如果偵測到使用者輸入未註冊的電子郵件，則顯示此欄位
+  const [showUsername, setShowUsername] = useState(false);
+  const [username, setUsername] = useState("");
 
   const submitHandler = async () => {
     try {
+      if (showUsername) {
+        await register();
+      }
+
       const res = await fetch(`${API_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: email, password: password }),
       });
 
       const data = await res.json();
@@ -31,10 +38,46 @@ const Login = () => {
         navigate("/server");
       } else {
         // This "error" column is defined in backend
-        setResHint(data["error"]);
+        switch (data["error"]) {
+          case "此電子郵件尚未註冊，現在進行註冊":
+            setShowUsername(true);
+            setResHint(`${data["error"]}。請輸入您的使用者名稱`);
+            break;
+          case "密碼錯誤":
+            setResHint(`此電子郵件已註冊，但${data["error"]}。請重新輸入`);
+            setShowUsername(false);
+            setPassword("");
+            break;
+          default:
+            console.log(data["error"]);
+            break;
+        }
       }
     } catch (error) {
       console.error("fetch error:", error);
+    }
+  };
+
+  const register = async () => {
+    try {
+      const res = await fetch(`${API_URL}/createUser`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          user_name: username,
+          Password: password,
+        }),
+      });
+      if (res.status === 200) {
+        console.log("register success");
+      } else {
+        console.log(res);
+      }
+    } catch (error) {
+      console.error("fetch error while registering", error);
     }
   };
 
@@ -63,17 +106,32 @@ const Login = () => {
           <CustomInput
             title={"電子郵件*"}
             type={"email"}
+            disabled={showUsername}
             val={email}
             setVal={setEmail}
           />
           <CustomInput
             title={"密碼*"}
             type={"password"}
+            disabled={showUsername}
             val={password}
             setVal={setPassword}
           />
+          {showUsername && (
+            <CustomInput
+              title={"使用者名稱（16位英文數字混合）*"}
+              type={"text"}
+              maxLength={16}
+              val={username}
+              setVal={setUsername}
+            />
+          )}
+
           <Button
-            disabled={!email || !password}
+            // disable按鈕情況:
+            // 1. 無論showUsername為true或false，電子郵件或密碼為空
+            // 2. 當showUsername為true時，增加一條規則:使用者名稱為空
+            disabled={!email || !password || (showUsername && !username)}
             onClick={() => {
               submitHandler();
             }}
@@ -82,13 +140,25 @@ const Login = () => {
             登入 / 註冊
           </Button>
           <div className="text-sm text-red-400">{resHint}</div>
+          {showUsername && (
+            <div
+              className="text-sm underline cursor-pointer"
+              onClick={() => {
+                setResHint("");
+                setUsername("");
+                setShowUsername(false);
+              }}
+            >
+              返回登入
+            </div>
+          )}
         </div>
       </div>
     </>
   );
 };
 
-const CustomInput = ({ title, type, val, setVal }) => {
+const CustomInput = ({ title, type, disabled, maxLength, val, setVal }) => {
   return (
     <>
       <div className="text-xs mr-auto mt-5">{title}</div>
@@ -97,6 +167,8 @@ const CustomInput = ({ title, type, val, setVal }) => {
         labelProps={{
           className: "hidden",
         }}
+        disabled={disabled}
+        maxLength={maxLength}
         value={val}
         onChange={(e) => {
           setVal(e.target.value);
@@ -110,4 +182,4 @@ const CustomInput = ({ title, type, val, setVal }) => {
   );
 };
 
-export default Login;
+export default LoginOrRegister;
