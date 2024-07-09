@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"server/db"
 	"server/internal/user"
+	"server/internal/server"
 	"server/router"
 )
 
@@ -16,6 +17,13 @@ func main() {
 	userSvc := user.NewService(userRep)
 	userHandler := user.NewHandler(userSvc)
 
-	r := router.InitRouter(userHandler)
+	// For server HTTP and WS
+	serverRep := server.NewRepository(dbConn.GetDB())
+	hub:= server.NewHub()
+	serverHandler := server.NewHandler(serverRep, hub)
+
+	// For server WS
+
+	r := router.InitRouter(userHandler, serverHandler)
 	router.Start(r, ":8080")
 }

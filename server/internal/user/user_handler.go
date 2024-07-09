@@ -67,3 +67,5 @@ func (h *Handler) Logout(ctx *gin.Context) {
 	ctx.SetCookie("jwt", "", -1, "", "", false, true)
 	ctx.JSON(http.StatusOK, gin.H{"message": "logout successful"})
 }
+
+

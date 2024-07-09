@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Dialog, Input } from "@material-tailwind/react";
 import { server_data } from "../";
+import { API_URL } from "../../../constants";
 
 const Sidebar = ({ server, setServer }) => {
   const navigate = useNavigate();
@@ -36,7 +37,17 @@ const Sidebar = ({ server, setServer }) => {
       <div
         className="h-10 w-12 relative flex items-center justify-center bg-grey-3 rounded-md group mt-auto mb-3
         text-sm font-bold cursor-pointer hover:bg-red-800 hover:text-white"
-        onClick={() => navigate("/")}
+        onClick={async () => {
+          localStorage.clear();
+          const res = await fetch(`${API_URL}/logout`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+          console.log(res);
+          navigate("/");
+        }}
       >
         登出
       </div>

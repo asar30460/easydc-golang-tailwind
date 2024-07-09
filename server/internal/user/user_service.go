@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"os"
 	"fmt"
 	"server/util"
 	"strconv"
@@ -9,9 +10,6 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 )
-
-// For convinient usage, seperate it in practice
-const secretKey = "secret"
 
 type service struct {
 	repo Respository
@@ -76,6 +74,8 @@ func (s* service) Login (ctx context.Context, req *LoginUserReq) (*LoginUserRes,
 	if err != nil {
 		return &LoginUserRes{}, fmt.Errorf("invalid password")
 	}
+
+	secretKey := os.Getenv("JWT_SECRET_KEY")
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, MyJWTClaims{
 		ID: strconv.Itoa(int(u.ID)),

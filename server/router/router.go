@@ -4,10 +4,11 @@ import (
 	"github.com/gin-gonic/gin"
 	cors "github.com/rs/cors/wrapper/gin"
 	"server/internal/user"
+	"server/internal/server"
 )
 
 
-func InitRouter(userHandler *user.Handler) *gin.Engine {
+func InitRouter(userHandler *user.Handler, serverHandler *server.Handler) *gin.Engine {
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Options{
@@ -22,6 +23,8 @@ func InitRouter(userHandler *user.Handler) *gin.Engine {
 	router.POST("/createUser", userHandler.CreateUser)
 	router.POST("/login", userHandler.Login)
 	router.POST("/logout", userHandler.Logout)
+
+	router.POST("/server/createServer", serverHandler.CreateServer)
 
 	return router
 }
