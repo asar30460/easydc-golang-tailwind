@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Input } from "@material-tailwind/react";
-import { API_URL } from "../../../constants";
+import { API_URL } from "../../constants";
 
 const LoginOrRegister = () => {
   const navigate = useNavigate();
@@ -21,6 +21,7 @@ const LoginOrRegister = () => {
 
       const res = await fetch(`${API_URL}/login`, {
         method: "POST",
+        credentials: "include", // 確保cookie包含在內
         headers: {
           "Content-Type": "application/json",
         },

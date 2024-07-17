@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Dialog, Input } from "@material-tailwind/react";
-import { server_data } from "../";
-import { API_URL } from "../../../constants";
+import { API_URL } from "../../constants";
 
-const Sidebar = ({ server, setServer }) => {
+const Sidebar = ({ serverList, server, setServer, setCruding }) => {
   const navigate = useNavigate();
 
   // 建立伺服器對話框參數設置
@@ -12,18 +11,19 @@ const Sidebar = ({ server, setServer }) => {
   const [serverName, setServerName] = useState("");
 
   return (
-    <div className="flex-none items-center h-screen w-16 m-0 pt-3 flex flex-col z-20 bg-grey-1 text-white gap-3">
-      {server_data.map((item) => (
-        <Link key={item.serverID} to={`${item.serverID}`}>
+    <div className="flex-none overflow-auto items-center h-screen w-16 m-0 pt-3 flex flex-col z-20 bg-grey-1 text-white gap-3">
+      {Object.keys(serverList).map((key) => (
+        <Link key={key} to={`${key}`}>
           <SideBarIcon
-            key={item.serverID}
-            alt={item.name}
-            text={item.name}
-            isSelected={item.serverID === server}
-            onClick={() => setServer(item.serverID)}
+            key={key}
+            alt={serverList[key]}
+            text={serverList[key]}
+            isSelected={key === server}
+            onClick={() => setServer(key)}
           />
         </Link>
       ))}
+
       <div className="box-content w-1/2 bg-gray-700 h-0.5 rounded-full mt-1"></div>
 
       <SearchServer />
@@ -33,6 +33,7 @@ const Sidebar = ({ server, setServer }) => {
         setOpen={setOpenCreate}
         serverName={serverName}
         setServerName={setServerName}
+        setCruding={setCruding}
       />
       <div
         className="h-10 w-12 relative flex items-center justify-center bg-grey-3 rounded-md group mt-auto mb-3
@@ -45,7 +46,6 @@ const Sidebar = ({ server, setServer }) => {
               "Content-Type": "application/json",
             },
           });
-          console.log(res);
           navigate("/");
         }}
       >
@@ -80,7 +80,13 @@ const SearchServer = () => {
 };
 
 // 建立伺服器對話窗
-const CreateServerDialog = ({ open, setOpen, serverName, setServerName }) => {
+const CreateServerDialog = ({
+  open,
+  setOpen,
+  serverName,
+  setServerName,
+  setCruding,
+}) => {
   const navigate = useNavigate();
   return (
     <>
@@ -130,11 +136,28 @@ const CreateServerDialog = ({ open, setOpen, serverName, setServerName }) => {
             <Button
               disabled={!serverName}
               onClick={() => {
-                console.log(`所建立的伺服器名稱為: ${serverName}`);
-                setOpen(false);
-                // 建立或搜尋伺服器後清空輸入框
-                setServerName("");
-                navigate("/server/NewServerID");
+                fetch(`${API_URL}/server/createServer`, {
+                  method: "POST",
+                  credentials: "include", // 確保cookie包含在內
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    server_name: serverName,
+                  }),
+                })
+                  .then((res) => {
+                    if (res.status === 200) {
+                      setOpen(false);
+                      // 建立或搜尋伺服器後清空輸入框
+                      setServerName("");
+                      return res.json();
+                    }
+                  })
+                  .then((data) => {
+                    setCruding(data["server_id"]);
+                    navigate(`${data["server_id"]}`);
+                  });
               }}
               className="rounded-sm bg-indigo-600 ml-auto"
             >

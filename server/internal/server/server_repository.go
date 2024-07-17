@@ -4,11 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"time"
-
-	"github.com/gin-gonic/gin"
-
-	"server/util"
 )
 
 type DBTX interface {
@@ -27,10 +22,7 @@ func NewRepository(db DBTX) *respository {
 	return &respository{db: db}
 }
 
-func (r *respository) CreateServer(ctx context.Context, server *CreateServerReq, c *gin.Context) (*CreateServerRes, error) {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
+func (r *respository) CreateServer(ctx context.Context, req *CreateServerReq, creator int) (*ServerMetadata, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -38,7 +30,7 @@ func (r *respository) CreateServer(ctx context.Context, server *CreateServerReq,
 
 	// 插入 server
 	query := "INSERT INTO server (server_name) VALUES (?)"
-	row, err := tx.ExecContext(ctx, query, server.ServerName)
+	row, err := tx.ExecContext(ctx, query, req.ServerName)
 	if err != nil {
 		return nil, err
 	}
@@ -49,19 +41,11 @@ func (r *respository) CreateServer(ctx context.Context, server *CreateServerReq,
 		return nil, err
 	}
 
-	// We parse the JWT token from the cookie to get logging user's ID
-	jwtClaims, err := util.ParseJWT(c)
-	if err != nil {
-		tx.Rollback()
-		fmt.Println("ParseJWT error: ", err)
-		return nil, err
-	}
-	
-	user_id:= jwtClaims["id"].(string)
+	// fmt.Printf("lastInsertID: %d, uid: %d\n", lastInsertID, creator)
 
 	// 插入 joins
 	query = "INSERT INTO joins (user_id, server_id) VALUES (?, ?)"
-	_, err = tx.ExecContext(ctx, query, user_id, lastInsertID)
+	_, err = tx.ExecContext(ctx, query, creator, lastInsertID)
 	if err != nil {
 		tx.Rollback()
 		fmt.Println("sql err. ", err)
@@ -70,7 +54,7 @@ func (r *respository) CreateServer(ctx context.Context, server *CreateServerReq,
 
 	// 插入 owns
 	query = "INSERT INTO owns (user_id, server_id) VALUES (?, ?)"
-	_, err = tx.ExecContext(ctx, query, user_id, lastInsertID)
+	_, err = tx.ExecContext(ctx, query, creator, lastInsertID)
 	if err != nil {
 		tx.Rollback()
 		fmt.Println("sql err. ", err)
@@ -82,20 +66,46 @@ func (r *respository) CreateServer(ctx context.Context, server *CreateServerReq,
 		return nil, err
 	}
 
-	res := &CreateServerRes{
+	res := &ServerMetadata{
 		ServerId:   int(lastInsertID),
-		ServerName: server.ServerName,
+		ServerName: req.ServerName,
 	}
 
 	return res, nil
 }
 
-// func (r *respository) GetServerByEmail(ctx context.Context, email string) (*User, error) {
-// 	s := GetServerRes
-// 	query := "SELECT user_id, email, user_name, password FROM user WHERE email = ?"
-// 	if err := r.db.QueryRowContext(ctx, query, email).Scan(&u.ID, &u.Email, &u.Username, &u.Password); err != nil {
-// 		return &User{}, err
-// 	}
+func (r *respository) GetServerByEmail(ctx context.Context, email string) (*GetServerRes, error) {
+	query := "SELECT server_id, server_name FROM user NATURAL JOIN server NATURAL JOIN joins WHERE email = ?"
+	rows, err := r.db.QueryContext(ctx, query, email)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-// 	return &u, nil
-// }
+	servers := make(map[string]string)
+
+	for rows.Next() {
+		var serverID string
+		var serverName string
+		if err := rows.Scan(&serverID, &serverName); err != nil {
+			return nil, err
+		}
+
+		servers[serverID] = serverName
+	}
+
+	// If the database is being written to ensure to check for Close
+	// errors that may be returned from the driver. The query may
+	// encounter an auto-commit error and be forced to rollback changes.
+	err = rows.Close()
+	if err != nil {
+		fmt.Println("rows.Close. ", err)
+	}
+
+	// Rows.Err will report the last error encountered by Rows.Scan.
+	if err = rows.Err(); err != nil {
+		fmt.Println("rows.Err. ", err)
+	}
+
+	return &GetServerRes{Servers: servers}, nil
+}

@@ -13,16 +13,16 @@ func main() {
 	if err != nil {
 		fmt.Println("Initilize db in main. ", err)
 	}
+	// For user HTTP
 	userRep := user.NewRepository(dbConn.GetDB())
 	userSvc := user.NewService(userRep)
 	userHandler := user.NewHandler(userSvc)
 
 	// For server HTTP and WS
 	serverRep := server.NewRepository(dbConn.GetDB())
-	hub:= server.NewHub()
-	serverHandler := server.NewHandler(serverRep, hub)
-
-	// For server WS
+	serverSvc := server.NewService(serverRep)
+	serverHub:= server.NewHub()
+	serverHandler := server.NewHandler(serverSvc, serverHub)
 
 	r := router.InitRouter(userHandler, serverHandler)
 	router.Start(r, ":8080")

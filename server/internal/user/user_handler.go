@@ -59,7 +59,9 @@ func (h *Handler) Login(ctx *gin.Context) {
 		return
 	}
 
-	ctx.SetCookie("jwt", res.accessToken, 3600, "/", "localhost", false, true)
+	ctx.SetSameSite(http.SameSiteNoneMode)
+	ctx.SetCookie("jwt", res.accessToken, 3600, "/", "localhost", true, false)
+
 	ctx.JSON(http.StatusOK, res)
 }
 

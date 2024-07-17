@@ -2,18 +2,19 @@ package server
 
 import (
 	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
-	repo Respository
-	hub *Hub
+	service Service
+	hub     *Hub
 }
 
-func NewHandler(r Respository, h *Hub) *Handler {
+func NewHandler(s Service, h *Hub) *Handler {
 	return &Handler{
-		repo: r,
-		hub: h,
+		service: s,
+		hub:     h,
 	}
 }
 
@@ -26,7 +27,7 @@ func (h *Handler) CreateServer(ctx *gin.Context) {
 		return
 	}
 
-	res, err := h.repo.CreateServer(ctx.Request.Context(), &s, ctx)
+	res, err := h.service.CreateServer(ctx.Request.Context(), &s, ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -45,15 +46,14 @@ func (h *Handler) CreateServer(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// func (h *Handler) GetServerByEmail(ctx *gin.Context) {
-// 	servers := make([]GetServerRes, 0)
+func (h *Handler) GetServerByEmail(ctx *gin.Context) {
+	res, err := h.service.GetServerByEmail(ctx.Request.Context(), ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 
-// 	for _, server := range h {
-// 		servers = append(servers, GetServerRes{
-// 			ServerId:   server,
-// 			ServerName: server.Name,
-// 		})
-// 	}
-
-// 	ctx.JSON(http.StatusOK, servers)
-// }
+	ctx.JSON(http.StatusOK, res)
+}

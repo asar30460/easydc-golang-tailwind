@@ -2,29 +2,28 @@ package user
 
 import (
 	"context"
-	"os"
 	"fmt"
+	"os"
 	"server/util"
-	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
 type service struct {
-	repo Respository
+	repo    Respository
 	timeout time.Duration
 }
 
-func NewService (repo Respository) *service {
+func NewService(repo Respository) *service {
 	return &service{
-		repo: repo,
+		repo:    repo,
 		timeout: 5 * time.Second,
 	}
 }
 
 func (s *service) CreateUser(ctx context.Context, req *CreateUserReq) (*CreateUserRes, error) {
-	ctx, cancel:=context.WithTimeout(ctx, s.timeout)
+	ctx, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 
 	hashedPassword, err := util.HashPassword(req.Password)
@@ -34,7 +33,7 @@ func (s *service) CreateUser(ctx context.Context, req *CreateUserReq) (*CreateUs
 
 	u := &User{
 		Username: req.Username,
-		Email: req.Email,
+		Email:    req.Email,
 		Password: hashedPassword,
 	}
 
@@ -43,22 +42,22 @@ func (s *service) CreateUser(ctx context.Context, req *CreateUserReq) (*CreateUs
 		return nil, err
 	}
 
-	res:= &CreateUserRes{
-		ID: r.ID,
+	res := &CreateUserRes{
+		ID:       r.ID,
 		Username: r.Username,
-		Email: r.Email,
+		Email:    r.Email,
 	}
 
-	return res, nil	
+	return res, nil
 }
 
-type MyJWTClaims struct {
-	ID       string    `json:"id"`
-	Username string `json:"username"`
+type MyCustomClaims struct {
+	UserID int    `json:"user_id"`
+	Email  string `json:"email"`
 	jwt.RegisteredClaims
 }
 
-func (s* service) Login (ctx context.Context, req *LoginUserReq) (*LoginUserRes, error) {
+func (s *service) Login(ctx context.Context, req *LoginUserReq) (*LoginUserRes, error) {
 	ctxCancel, cancel := context.WithTimeout(ctx, s.timeout)
 	defer cancel()
 
@@ -77,23 +76,31 @@ func (s* service) Login (ctx context.Context, req *LoginUserReq) (*LoginUserRes,
 
 	secretKey := os.Getenv("JWT_SECRET_KEY")
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, MyJWTClaims{
-		ID: strconv.Itoa(int(u.ID)),
-		Username: u.Username,
-		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer: strconv.Itoa(int(u.ID)),
+	// Create claims with multiple fields populated
+	claims := MyCustomClaims{
+		u.ID,
+		u.Email,
+		jwt.RegisteredClaims{
+			// Also fixed dates can be used for the NumericDate
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(time.Now()),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			Issuer:    os.Getenv("JWT_ISSUER"),
+			Subject:   u.Username,
 		},
-	})
+	}
 
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	ss, err := token.SignedString([]byte(secretKey))
+	// fmt.Println("token: ", ss)
+
 	if err != nil {
 		return &LoginUserRes{}, err
 	}
 
 	return &LoginUserRes{
 		accessToken: ss,
-		Username: u.Username,
-		Email: u.Email,
+		Username:    u.Username,
+		Email:       u.Email,
 	}, nil
 }
