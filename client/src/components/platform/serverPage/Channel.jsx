@@ -1,7 +1,8 @@
 import React from "react";
 import { Button } from "@material-tailwind/react";
 
-const Channel = ({ server, channel, setChannel }) => {
+const Channel = ({ channelList, channelID, setChannelID }) => {
+  // console.log(channelID);
   return (
     <div className="flex-none min-w-56 mx-2 mt-5">
       <div className="flex justify-between mb-2">
@@ -9,14 +10,14 @@ const Channel = ({ server, channel, setChannel }) => {
         <div className="text-xs">+</div>
       </div>
       <div className="grid">
-        {server.channels.map((item) => (
+        {Object.keys(channelList).map((key) => (
           <Button
             className={`flex items-center rounded-none ${
-              item.name === channel ? "bg-gray-700" : "bg-grey-2"
+              channelID === key ? "bg-gray-700" : "bg-grey-2"
             } gap-2 px-2`}
-            key={item.name}
+            key={key}
             onClick={() => {
-              setChannel(item.name);
+              setChannelID(key);
             }}
           >
             <svg
@@ -34,7 +35,7 @@ const Channel = ({ server, channel, setChannel }) => {
               />
             </svg>
 
-            {item.name}
+            {channelList[key]}
           </Button>
         ))}
       </div>

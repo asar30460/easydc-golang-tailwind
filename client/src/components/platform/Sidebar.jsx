@@ -3,7 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button, Dialog, Input } from "@material-tailwind/react";
 import { API_URL } from "../../constants";
 
-const Sidebar = ({ serverList, server, setServer, setCruding }) => {
+const Sidebar = ({
+  serverList,
+  server,
+  setServer,
+  setCruding,
+  setSwitchServer,
+}) => {
   const navigate = useNavigate();
 
   // 建立伺服器對話框參數設置
@@ -19,7 +25,10 @@ const Sidebar = ({ serverList, server, setServer, setCruding }) => {
             alt={serverList[key]}
             text={serverList[key]}
             isSelected={key === server}
-            onClick={() => setServer(key)}
+            onClick={() => {
+              setSwitchServer(key);
+              setServer(key);
+            }}
           />
         </Link>
       ))}
@@ -40,7 +49,7 @@ const Sidebar = ({ serverList, server, setServer, setCruding }) => {
         text-sm font-bold cursor-pointer hover:bg-red-800 hover:text-white"
         onClick={async () => {
           localStorage.clear();
-          const res = await fetch(`${API_URL}/logout`, {
+          await fetch(`${API_URL}/logout`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

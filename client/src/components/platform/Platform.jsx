@@ -17,6 +17,9 @@ const Platform = () => {
   // 檢測伺服器列表是否變動以重新載入，當發生變動時setCruding(server_id)
   const [cruding, setCruding] = useState(0);
 
+  // 切換伺服器時，觸發更新伺服器component內容
+  const [switchServer, setSwitchServer] = useState(0);
+
   useEffect(() => {
     const fetchAddedServer = () => {
       fetch(`${API_URL}/server/getServers`, {
@@ -34,6 +37,8 @@ const Platform = () => {
             setServerList(data);
             // console.log(Object.keys(data)[0]);
             setServerID(Object.keys(data)[0]);
+          } else {
+            setServerList([]);
           }
         });
       });
@@ -62,14 +67,19 @@ const Platform = () => {
         {serverList.length === 0 ? (
           <Route path="/" element={<NoServer />}></Route>
         ) : (
-          <Route path="/devloping" element={<div>開發中</div>}></Route>
-          // serverList.map((item) => (
-          //   <Route
-          //     key={item.serverID}
-          //     path={`/${item.serverID}`}
-          //     element={<Server serverID={serverID} />}
-          //   />
-          // ))
+          Object.keys(serverList).map((key) => (
+            <Route
+              key={key}
+              path={`/${key}`}
+              element={
+                <Server
+                  serverID={serverID}
+                  serverList={serverList}
+                  switchServer={switchServer}
+                />
+              }
+            />
+          ))
         )}
       </Routes>
     );
@@ -82,6 +92,7 @@ const Platform = () => {
         server={serverID}
         setServer={setServerID}
         setCruding={setCruding}
+        setSwitchServer={setSwitchServer}
       />
       {loading ? <div>loading...</div> : renderComponet()}
     </div>

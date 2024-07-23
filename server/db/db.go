@@ -15,7 +15,7 @@ type Database struct {
 }
 
 // constructor
-func NewDatabase() (*Database, error)  {
+func NewDatabase() (*Database, error) {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -24,7 +24,8 @@ func NewDatabase() (*Database, error)  {
 	mariadbPW := os.Getenv("MARIADB_PW")
 	mariadbIP := os.Getenv("MARIADB_IP")
 	mariadbConnDB := os.Getenv("MARIADB_CONNDB")
-	strConn:=mariadbUser+":"+mariadbPW+mariadbIP+mariadbConnDB
+	additionalArgs := "?parseTime=true"
+	strConn := mariadbUser + ":" + mariadbPW + mariadbIP + mariadbConnDB + additionalArgs
 
 	// sql.open() is not a connection. When you use sql.Open() you get a handle for a database.
 	// The database/sql package manages a pool of connections in the background, and doesn't open any connections until you need them.
@@ -54,6 +55,6 @@ func (db *Database) Close() {
 	db.db.Close()
 }
 
-func (db* Database) GetDB() *sql.DB {
+func (db *Database) GetDB() *sql.DB {
 	return db.db
 }

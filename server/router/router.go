@@ -14,7 +14,7 @@ func InitRouter(userHandler *user.Handler, serverHandler *server.Handler) *gin.E
 	router.Use(cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173"}, // Update to match the origin you want to allow
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Origin", "Content-Type", "Authorization"},
+		AllowedHeaders:   []string{"Origin", "Content-Type"},
 		AllowCredentials: true,
 		// Enable Debugging for testing, consider disabling in production
 		Debug: true,
@@ -26,6 +26,15 @@ func InitRouter(userHandler *user.Handler, serverHandler *server.Handler) *gin.E
 
 	router.POST("/server/createServer", serverHandler.CreateServer)
 	router.GET("/server/getServers", serverHandler.GetServerByEmail)
+
+	router.POST("/server/:server_id/createChannel", serverHandler.CreateChannel)
+	router.GET("/server/:server_id/getChannels", serverHandler.GetChannel)
+	router.GET("/server/:server_id/getMembers", serverHandler.GetMember)
+	
+	// This is for get historys msg in the given channel.
+	// Since channel_id is unique, so we don't specify url.
+	router.POST("/server/createMsg", serverHandler.CreateMsg)
+	router.POST("/server/getHistoryMsgs", serverHandler.GetHistorysMsg)
 
 	return router
 }

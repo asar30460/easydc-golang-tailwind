@@ -8,15 +8,15 @@ import (
 type Client struct {
 	Conn     *websocket.Conn
 	Message  chan *Message
-	ID       string `json:"id"`
-	ServerID string `json:"server_id"`
+	ID       int    `json:"id"`
+	ServerID int `json:"server_id"`
 	Username string `json:"user_name"`
 }
 
 type Message struct {
 	Content   string `json:"content"`
-	ServerID  string `json:"server_id"`
-	ChannelID string `json:"channel_id"`
+	ServerID  int    `json:"server_id"`
+	ChannelID int `json:"channel_id"`
 	Username  string `json:"user_name"`
 }
 

@@ -1,28 +1,27 @@
 package server
 
-
 type Hub struct {
-	Servers   map[string]*Server
-	Register  chan *Client
+	Servers    map[int]*Server
+	Register   chan *Client
 	Unregister chan *Client
-	Broadcast chan *Message
+	Broadcast  chan *Message
 }
 
 type Server struct {
-	ID       string              `json:"id"`
+	ID       int                 `json:"id"`
 	Name     string              `json:"name"`
-	Channels map[string]*Channel `json:"channels"`
-	Clients  map[string]*Client  `json:"clients"`
+	Channels map[int]*Channel `json:"channels"`
+	Clients  map[int]*Client  `json:"clients"`
 }
 
 type Channel struct {
-	ID   string
+	ID   int
 	Name string
 }
 
 func NewHub() *Hub {
 	return &Hub{
-		Servers:   make(map[string]*Server),
+		Servers:   make(map[int]*Server),
 		Register:  make(chan *Client),
 		Broadcast: make(chan *Message, 5),
 	}
@@ -46,7 +45,7 @@ func (h *Hub) Run() {
 					if len(h.Servers[cl.ServerID].Clients) != 0 {
 						h.Broadcast <- &Message{
 							Content:  "user left the chat",
-							ServerID:   cl.ServerID,
+							ServerID: cl.ServerID,
 							Username: cl.Username,
 						}
 					}

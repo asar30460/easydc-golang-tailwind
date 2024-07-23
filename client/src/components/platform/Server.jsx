@@ -2,45 +2,71 @@
 import { useState, useEffect } from "react";
 
 import { Header, Channel, Content, Member } from "./serverPage";
-import { server_data } from "..";
+import { API_URL } from "../../constants";
 
-const Server = ({ serverID }) => {
-  const [server, setServer] = useState(null);
-  const [channel, setChannel] = useState("");
+const Server = ({ serverID, serverList, switchServer }) => {
+  const [channelList, setChannelList] = useState([]);
+  const [channelID, setChannelID] = useState();
   const [member, serMember] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchServerData = () => {
-      const serverData = server_data.find((item) => item.serverID === serverID);
-      setServer(serverData);
-      setChannel(serverData.channels[0].name);
+      setLoading(true);
 
-      const memberMap = new Map();
-      serverData.users.forEach((element) => {
-        // console.log(memberMap.get(element.email));
-        memberMap.set(element.email, element.name);
+      fetch(`${API_URL}/server/${serverID}/getChannels`, {
+        method: "GET",
+        credentials: "include", // 確保cookie包含在內
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).then((res) => {
+        // console.log(res);
+        res.json().then((channel_data) => {
+          let data = channel_data["channels"];
+          if (Object.keys(data).length !== 0) {
+            // console.log(data);
+            setChannelList(data);
+            setChannelID(Object.keys(data)[0]);
+          } else {
+            setChannelList([]);
+          }
+        });
       });
-      serMember(memberMap);
 
+      fetch(`${API_URL}/server/${serverID}/getMembers`, {
+        method: "GET",
+        credentials: "include", // 確保cookie包含在內
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).then((res) => {
+        res.json().then((member_data) => {
+          // console.log(member_data["members"]);
+          serMember(member_data["members"]);
+        });
+      });
       setLoading(false);
     };
 
     fetchServerData();
-  }, [serverID]);
+  }, [switchServer]);
 
   return loading ? (
     <div>Loading...</div>
   ) : (
     <div className="grow flex flex-col h-screen">
-      <Header serverName={server.name} channelName={channel} />
+      <Header
+        serverName={serverList[serverID]}
+        channelName={channelList[channelID]}
+      />
       <div className="grow flex bg-grey-2">
-        <Channel server={server} channel={channel} setChannel={setChannel} />
-        <Content
-          channelList={server.channels}
-          channel={channel}
-          speaker={member}
+        <Channel
+          channelList={channelList}
+          channelID={channelID}
+          setChannelID={setChannelID}
         />
+        <Content channelID={channelID} />
         <Member member={member} />
       </div>
     </div>
