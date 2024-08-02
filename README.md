@@ -9,7 +9,7 @@
 | 登入 | :white_check_mark: | :white_check_mark: |
 | 登出 | :white_check_mark: | :white_check_mark: |
 | 建立伺服器 | :white_check_mark: | :white_check_mark: |
-| 加入伺服器 | | |
+| 加入伺服器 | :white_check_mark: | |
 | 取得使用者加入的伺服器 | :white_check_mark: | :white_check_mark: |
 | 建立頻道 | :white_check_mark: | |
 | 取得伺服器頻道 | :white_check_mark: | :white_check_mark: |
@@ -35,9 +35,10 @@
 
 ### 後端應用技術
 
-1. Service Repository Pattern(SRP)架構
-2. JWT 驗證
-3. Gin context(JSON)、WebSocket、Goroutine
+1. 採用 Service Repository Pattern (SRP) 架構，模組化程式碼
+2. WebSocket 完成一對多連線
+3. JWT 驗證
+4. Gin context(JSON)、Goroutine
 
 ## 預覽畫面
 

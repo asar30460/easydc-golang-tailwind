@@ -2,8 +2,9 @@ package server
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type CreateServerReq struct {
@@ -16,7 +17,16 @@ type CreateServerRes struct {
 }
 
 type GetServerRes struct {
-	Servers map[string]string `json:"servers"`
+	Servers map[int]string `json:"servers"`
+}
+
+type JoinServerReq struct {
+	ServerID int `json:"server_id"`
+}
+
+type JoinServerRes struct {
+	ServerID int `json:"server_id"`
+	UserID   int `json:"user_id"`
 }
 
 type CreateChannelReq struct {
@@ -29,7 +39,7 @@ type CreateChannelRes struct {
 }
 
 type GetChannelRes struct {
-	Channels map[string]string `json:"channels"`
+	Channels map[int]string `json:"channels"`
 }
 
 type GetMemberRes struct {
@@ -52,9 +62,8 @@ type GetHistorysMsgRes struct {
 }
 
 type CreateMsgReq struct {
-	ChannelID int       `json:"channel_id"`
-	Message   string    `json:"msg"`
-	Time      time.Time `json:"time"`
+	ChannelID int    `json:"channel_id"`
+	Message   string `json:"msg"`
 }
 
 type CreateMsgRes struct {
@@ -66,6 +75,7 @@ type CreateMsgRes struct {
 type Service interface {
 	CreateServer(ctx context.Context, req *CreateServerReq, gctx *gin.Context) (*CreateServerRes, error)
 	GetServerByEmail(ctx context.Context, gctx *gin.Context) (*GetServerRes, error)
+	JoinServer(ctx context.Context, req *JoinServerReq, gctx *gin.Context) (*JoinServerRes, error)
 	CreateChannel(ctx context.Context, req *CreateChannelReq, server_id int) (*CreateChannelRes, error)
 	GetChannel(ctx context.Context, server_id int) (*GetChannelRes, error)
 	GetMember(ctx context.Context, server_id int) (*GetMemberRes, error)
@@ -75,9 +85,10 @@ type Service interface {
 
 type Respository interface {
 	CreateServer(ctx context.Context, server_name string, creator int) (int, string, error)
-	GetServerByEmail(ctx context.Context, email string) (map[string]string, error)
+	GetServerByEmail(ctx context.Context, email string) (map[int]string, error)
+	JoinServer(ctx context.Context, server_id int, user_id int) (int, int, error)
 	CreateChannel(ctx context.Context, channel_name string, server_id int) (int, string, error)
-	GetChannel(ctx context.Context, server_id int) (map[string]string, error)
+	GetChannel(ctx context.Context, server_id int) (map[int]string, error)
 	GetMember(ctx context.Context, server_id int) (map[string]string, error)
 	CreateMsg(ctx context.Context, channel_id int, user_id int, time time.Time, message string) (Msg, error)
 	GetHistorysMsg(ctx context.Context, channel_id int) ([]Msg, error)

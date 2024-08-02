@@ -69,6 +69,29 @@ func (s *service) GetServerByEmail(ctx context.Context, gctx *gin.Context) (*Get
 	}, nil
 }
 
+func (s *service) JoinServer(ctx context.Context, req *JoinServerReq, gctx *gin.Context) (*JoinServerRes, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	jwtClaims, err := util.ParseJWT(gctx)
+	if err != nil {
+		err = fmt.Errorf("parse JWT error: %s", err)
+		return nil, err
+	}
+	user_id := jwtClaims.UserID
+
+	res_user, res_server, err := s.repo.JoinServer(ctx, req.ServerID, user_id)
+	if err != nil {
+		err = fmt.Errorf("sql error: %s", err)
+		return nil, err
+	}
+
+	return &JoinServerRes{
+		ServerID: res_server,
+		UserID:   res_user,
+	}, nil
+}
+
 func (s *service) CreateChannel(ctx context.Context, req *CreateChannelReq, server_id int) (*CreateChannelRes, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
@@ -126,7 +149,8 @@ func (s *service) CreateMsg(ctx context.Context, req *CreateMsgReq, gctx *gin.Co
 	}
 	user_id := jwtClaims.UserID
 
-	res, err := s.repo.CreateMsg(ctx, req.ChannelID, user_id, req.Time, req.Message)
+	currentTime := time.Now()
+	res, err := s.repo.CreateMsg(ctx, req.ChannelID, user_id, currentTime, req.Message)
 	if err != nil {
 		err = fmt.Errorf("sql error: %s", err)
 		return nil, err
@@ -134,7 +158,7 @@ func (s *service) CreateMsg(ctx context.Context, req *CreateMsgReq, gctx *gin.Co
 
 	return &CreateMsgRes{
 		UserID:  res.UserID,
-		Time:    res.Time,
+		Time:    currentTime,
 		Message: res.Message,
 	}, nil
 }

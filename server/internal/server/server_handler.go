@@ -1,22 +1,33 @@
 package server
 
 import (
-	"strconv"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
 	service Service
-	hub     *Hub
 }
 
-func NewHandler(s Service, h *Hub) *Handler {
+func NewHandler(s Service) *Handler {
 	return &Handler{
 		service: s,
-		hub:     h,
 	}
+}
+
+
+func (h *Handler) GetServer(ctx *gin.Context) {
+	res, err := h.service.GetServerByEmail(ctx.Request.Context(), ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, res)
 }
 
 func (h *Handler) CreateServer(ctx *gin.Context) {
@@ -36,19 +47,19 @@ func (h *Handler) CreateServer(ctx *gin.Context) {
 		return
 	}
 
-	// 資料庫新增成功後，加入 hub
-	h.hub.Servers[res.ServerID] = &Server{
-		ID:       res.ServerID,
-		Name:     res.ServerName,
-		Clients:  make(map[int]*Client),
-		Channels: make(map[int]*Channel),
-	}
-
 	ctx.JSON(http.StatusOK, res)
 }
 
-func (h *Handler) GetServerByEmail(ctx *gin.Context) {
-	res, err := h.service.GetServerByEmail(ctx.Request.Context(), ctx)
+func (h *Handler) JoinServer(ctx *gin.Context) {
+	var s JoinServerReq
+	if err := ctx.ShouldBindJSON(&s); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	res, err := h.service.JoinServer(ctx.Request.Context(), &s, ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -97,7 +108,7 @@ func (h *Handler) GetChannel(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-func (h *Handler) GetMember (ctx *gin.Context) {
+func (h *Handler) GetMember(ctx *gin.Context) {
 	server_id := ctx.Param("server_id")
 	int_server_id, _ := strconv.Atoi(server_id)
 

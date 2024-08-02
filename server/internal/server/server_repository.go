@@ -70,7 +70,7 @@ func (r *respository) CreateServer(ctx context.Context, server_name string, crea
 	return int(lastInsertID), server_name, nil
 }
 
-func (r *respository) GetServerByEmail(ctx context.Context, email string) (map[string]string, error) {
+func (r *respository) GetServerByEmail(ctx context.Context, email string) (map[int]string, error) {
 	query := "SELECT server_id, server_name FROM user NATURAL JOIN server NATURAL JOIN joins WHERE email = ?"
 	rows, err := r.db.QueryContext(ctx, query, email)
 	if err != nil {
@@ -78,10 +78,10 @@ func (r *respository) GetServerByEmail(ctx context.Context, email string) (map[s
 	}
 	defer rows.Close()
 
-	servers := make(map[string]string)
+	servers := make(map[int]string)
 
 	for rows.Next() {
-		var serverID string
+		var serverID int
 		var serverName string
 		if err := rows.Scan(&serverID, &serverName); err != nil {
 			return nil, err
@@ -104,6 +104,17 @@ func (r *respository) GetServerByEmail(ctx context.Context, email string) (map[s
 	}
 
 	return servers, nil
+}
+
+func (r *respository) JoinServer(ctx context.Context, server_id int, user_id int) (int, int, error) {
+	query := "INSERT INTO joins (user_id, server_id) VALUES (?, ?)"
+	rows, err := r.db.QueryContext(ctx, query, user_id, server_id)
+	if err != nil {
+		return -1, -1, err
+	}
+	defer rows.Close()
+
+	return user_id, server_id, nil
 }
 
 func (r *respository) CreateChannel(ctx context.Context, channel_name string, server_id int) (int, string, error) {
@@ -143,7 +154,8 @@ func (r *respository) CreateChannel(ctx context.Context, channel_name string, se
 	return int(lastInsertID), channel_name, err
 }
 
-func (r *respository) GetChannel(ctx context.Context, server_id int) (map[string]string, error) {
+
+func (r *respository) GetChannel(ctx context.Context, server_id int) (map[int]string, error) {
 	query := "SELECT channel_id, channel_name FROM channel NATURAL JOIN has WHERE server_id = ?"
 
 	rows, err := r.db.QueryContext(ctx, query, server_id)
@@ -152,10 +164,10 @@ func (r *respository) GetChannel(ctx context.Context, server_id int) (map[string
 	}
 	defer rows.Close()
 
-	channels := make(map[string]string)
+	channels := make(map[int]string)
 
 	for rows.Next() {
-		var channelID string
+		var channelID int
 		var channelName string
 		if err := rows.Scan(&channelID, &channelName); err != nil {
 			return nil, err

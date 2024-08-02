@@ -3,3 +3,5 @@ client/yarn.lock
 
 server/*.exe
 server/.env
+
+.vs/

@@ -21,8 +21,7 @@ func main() {
 	// For server HTTP and WS
 	serverRep := server.NewRepository(dbConn.GetDB())
 	serverSvc := server.NewService(serverRep)
-	serverHub:= server.NewHub()
-	serverHandler := server.NewHandler(serverSvc, serverHub)
+	serverHandler := server.NewHandler(serverSvc)
 
 	r := router.InitRouter(userHandler, serverHandler)
 	router.Start(r, ":8080")
