@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -154,7 +155,6 @@ func (r *respository) CreateChannel(ctx context.Context, channel_name string, se
 	return int(lastInsertID), channel_name, err
 }
 
-
 func (r *respository) GetChannel(ctx context.Context, server_id int) (map[int]string, error) {
 	query := "SELECT channel_id, channel_name FROM channel NATURAL JOIN has WHERE server_id = ?"
 
@@ -221,24 +221,8 @@ func (r *respository) GetMember(ctx context.Context, server_id int) (map[string]
 	return members, nil
 }
 
-func (r *respository) CreateMsg(ctx context.Context, channel_id int, user_id int, time time.Time, message string) (Msg, error) {
-	query := "INSERT INTO chat (channel_id, user_id, time, content) VALUES (?, ?, ?, ?)"
-	row, err := r.db.QueryContext(ctx, query, channel_id, user_id, time, message)
-	if err != nil {
-		return Msg{
-			UserID:   -1,
-			UserName: "",
-			Time:     time,
-			Message:  "",
-		}, err
-	}
-	defer row.Close()
-
-	return Msg{UserID: user_id, UserName: "Not necessary here!", Time: time, Message: message}, err
-}
-
 func (r *respository) GetHistorysMsg(ctx context.Context, channel_id int) ([]Msg, error) {
-	query := "SELECT user_id, user_name, time, content FROM channel NATURAL JOIN chat NATURAL JOIN user WHERE channel_id = ?"
+	query := "SELECT user_id, user_name, time, content FROM channel NATURAL JOIN chat NATURAL JOIN user WHERE channel_id = ? ORDER BY time ASC"
 
 	rows, err := r.db.QueryContext(ctx, query, channel_id)
 	if err != nil {
@@ -268,4 +252,56 @@ func (r *respository) GetHistorysMsg(ctx context.Context, channel_id int) ([]Msg
 	}
 
 	return msgs, nil
+}
+
+func (r *respository) WsGetClientInfo(ctx context.Context, user_id int) (string, string, []int, error) {
+	query := "SELECT server_id FROM user NATURAL JOIN server NATURAL JOIN joins WHERE user_id = ?"
+	rows, err := r.db.QueryContext(ctx, query, user_id)
+	if err != nil {
+		return "", "", nil, err
+	}
+	defer rows.Close()
+
+	servers := make([]int, 0)
+
+	for rows.Next() {
+		var serverID int
+		if err := rows.Scan(&serverID); err != nil {
+			return "", "", nil, err
+		}
+
+		servers = append(servers, serverID)
+	}
+
+	var UserName, Email string
+	query = "SELECT user_name, email FROM user WHERE user_id = ?"
+	if err = r.db.QueryRowContext(ctx, query, user_id).Scan(&UserName, &Email); err != nil {
+		return "", "", nil, err
+	}
+
+	// If the database is being written to ensure to check for Close
+	// errors that may be returned from the driver. The query may
+	// encounter an auto-commit error and be forced to rollback changes.
+	err = rows.Close()
+	if err != nil {
+		fmt.Println("rows.Close. ", err)
+	}
+
+	// Rows.Err will report the last error encountered by Rows.Scan.
+	if err = rows.Err(); err != nil {
+		fmt.Println("rows.Err. ", err)
+	}
+
+	return Email, UserName, servers, nil
+}
+
+func (r *respository) WsSendMessage(ctx context.Context, msg WsMessage) error {
+	query := "INSERT INTO chat (channel_id, user_id, time, content) VALUES (?, ?, ?, ?)"
+	row, err := r.db.QueryContext(ctx, query, msg.ChannelID, msg.UserID, time.Now().Add(8*time.Hour), msg.Message)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer row.Close()
+
+	return nil
 }

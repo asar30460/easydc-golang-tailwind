@@ -5,14 +5,18 @@
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Sidebar, Server, NoServer, SearchResult } from "./";
-import { API_URL } from "../../constants";
+import { API_URL, WS_URL } from "../../constants";
+
+import Cookies from "universal-cookie";
 
 const Platform = () => {
   // 列出該使用者有的伺服器清單，預設值是沒有參加任何伺服器
   const [serverList, setServerList] = useState([]);
   const [serverID, setServerID] = useState();
+  const [ws, setWs] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const cookie = new Cookies();
 
   // 檢測伺服器列表是否變動以重新載入，當發生變動時setCruding(server_id)
   const [cruding, setCruding] = useState(0);
@@ -42,6 +46,12 @@ const Platform = () => {
           }
         });
       });
+
+      const socket = new WebSocket(
+        `${WS_URL}/server/handleWs?userId=${cookie.get("user_id")}`
+      );
+      setWs(socket);
+      console.log("connect to websocket", socket);
 
       setLoading(false);
     };
@@ -76,6 +86,7 @@ const Platform = () => {
                   serverID={serverID}
                   serverList={serverList}
                   switchServer={switchServer}
+                  ws={ws}
                 />
               }
             />
@@ -93,6 +104,7 @@ const Platform = () => {
         setServer={setServerID}
         setCruding={setCruding}
         setSwitchServer={setSwitchServer}
+        ws={ws}
       />
       {loading ? <div>loading...</div> : renderComponet()}
     </div>

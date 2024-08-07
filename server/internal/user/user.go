@@ -11,10 +11,10 @@ type User struct {
 
 	// These tags are used by libraries such as the encoding/json package for JSON operations
 
-	ID       int    `json:"id" db:"id"`             // JSON key: "id", Database column: "id"
+	ID       int    `json:"id" db:"id"`               // JSON key: "id", Database column: "id"
 	Username string `json:"user_name" db:"user_name"` // JSON key: "username", Database column: "username"
-	Email    string `json:"email" db:"email"`       // JSON key: "email", Database column: "email"
-	Password string `json:"password" db:"password"` // JSON key: "password", Database column: "password"
+	Email    string `json:"email" db:"email"`         // JSON key: "email", Database column: "email"
+	Password string `json:"password" db:"password"`   // JSON key: "password", Database column: "password"
 }
 
 type CreateUserReq struct {
@@ -36,8 +36,9 @@ type LoginUserReq struct {
 
 type LoginUserRes struct {
 	accessToken string
-	Email    string `json:"email"`
+	Email       string `json:"email"`
 	Username    string `json:"user_name"`
+	UserID      int    `json:"user_id"`
 }
 
 type Respository interface {
@@ -47,5 +48,5 @@ type Respository interface {
 
 type Service interface {
 	CreateUser(ctx context.Context, req *CreateUserReq) (*CreateUserRes, error)
-	Login (ctx context.Context, req *LoginUserReq) (*LoginUserRes, error)
+	Login(ctx context.Context, req *LoginUserReq) (*LoginUserRes, error)
 }

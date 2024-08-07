@@ -9,6 +9,7 @@ const Sidebar = ({
   setServer,
   setCruding,
   setSwitchServer,
+  ws,
 }) => {
   const navigate = useNavigate();
 
@@ -55,6 +56,7 @@ const Sidebar = ({
               "Content-Type": "application/json",
             },
           });
+          ws.close();
           navigate("/");
         }}
       >

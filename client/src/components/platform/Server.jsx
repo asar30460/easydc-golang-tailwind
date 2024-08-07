@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Header, Channel, Content, Member } from "./serverPage";
 import { API_URL } from "../../constants";
 
-const Server = ({ serverID, serverList, switchServer }) => {
+const Server = ({ serverID, serverList, switchServer, ws }) => {
   const [channelList, setChannelList] = useState([]);
   const [channelID, setChannelID] = useState();
   const [member, serMember] = useState("");
@@ -66,7 +66,7 @@ const Server = ({ serverID, serverList, switchServer }) => {
           channelID={channelID}
           setChannelID={setChannelID}
         />
-        <Content channelID={channelID} />
+        <Content serverID={serverID} channelID={channelID} ws={ws} />
         <Member member={member} />
       </div>
     </div>

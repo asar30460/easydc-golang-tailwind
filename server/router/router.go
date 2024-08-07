@@ -25,6 +25,7 @@ func InitRouter(userHandler *user.Handler, serverHandler *server.Handler) *gin.E
 	router.POST("/logout", userHandler.Logout)
 
 	router.GET("/server/handleWs", serverHandler.HandleWS)
+	go serverHandler.BroadcastMessages()
 
 	router.POST("/server/createServer", serverHandler.CreateServer)
 	router.GET("/server/getServers", serverHandler.GetServer)
@@ -36,7 +37,6 @@ func InitRouter(userHandler *user.Handler, serverHandler *server.Handler) *gin.E
 
 	// This is for get historys msg in the given channel.
 	// Since channel_id is unique, so we don't specify url.
-	router.POST("/server/createMsg", serverHandler.CreateMsg)
 	router.POST("/server/getHistoryMsgs", serverHandler.GetHistorysMsg)
 
 	return router

@@ -45,7 +45,7 @@ func (s *service) CreateServer(ctx context.Context, req *CreateServerReq, gctx *
 	}, nil
 }
 
-func (s *service) GetServerByEmail(ctx context.Context, gctx *gin.Context) (*GetServerRes, error) {
+func (s *service) GetServer(ctx context.Context, gctx *gin.Context) (*GetServerRes, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -138,31 +138,6 @@ func (s *service) GetMember(ctx context.Context, server_id int) (*GetMemberRes, 
 	}, nil
 }
 
-func (s *service) CreateMsg(ctx context.Context, req *CreateMsgReq, gctx *gin.Context) (*CreateMsgRes, error) {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
-	jwtClaims, err := util.ParseJWT(gctx)
-	if err != nil {
-		err = fmt.Errorf("parse JWT error: %s", err)
-		return nil, err
-	}
-	user_id := jwtClaims.UserID
-
-	currentTime := time.Now()
-	res, err := s.repo.CreateMsg(ctx, req.ChannelID, user_id, currentTime, req.Message)
-	if err != nil {
-		err = fmt.Errorf("sql error: %s", err)
-		return nil, err
-	}
-
-	return &CreateMsgRes{
-		UserID:  res.UserID,
-		Time:    currentTime,
-		Message: res.Message,
-	}, nil
-}
-
 func (s *service) GetHistorysMsg(ctx context.Context, req *GetHistorysMsgReq) (*GetHistorysMsgRes, error) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
@@ -176,4 +151,27 @@ func (s *service) GetHistorysMsg(ctx context.Context, req *GetHistorysMsgReq) (*
 	return &GetHistorysMsgRes{
 		Historys: res,
 	}, nil
+}
+
+func (s *service) WsGetClientInfo(ctx *gin.Context, userId int) (*GetWsClientInfoRes, error) {
+	email, userName, servers, err := s.repo.WsGetClientInfo(ctx, userId)
+	if err != nil {
+		err = fmt.Errorf("sql error: %s", err)
+		return nil, err
+	}
+
+	return &GetWsClientInfoRes{
+		UserEmail: email,
+		UserName:  userName,
+		Servers:   servers,
+	}, nil
+}
+
+func (s *service) WsSendMessage(ctx *gin.Context, msg WsMessage) error {
+	if err := s.repo.WsSendMessage(ctx, msg); err != nil {
+		fmt.Println("sql error: ", err)
+		return nil
+	}
+
+	return nil
 }

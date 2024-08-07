@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"server/db"
-	"server/internal/user"
 	"server/internal/server"
+	"server/internal/user"
 	"server/router"
 )
 

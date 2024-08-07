@@ -31,8 +31,9 @@ const LoginOrRegister = () => {
       const data = await res.json();
       if (res.status === 200) {
         const user = {
+          id: data.user_id,
           username: data.user_name,
-          id: data.id,
+          email: data.email,
         };
 
         localStorage.setItem("user_info", JSON.stringify(user));

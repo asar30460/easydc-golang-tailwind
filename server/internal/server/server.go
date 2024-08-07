@@ -72,15 +72,31 @@ type CreateMsgRes struct {
 	Message string    `json:"msg"`
 }
 
+type GetWsClientInfoRes struct {
+	UserEmail string
+	UserName  string
+	Servers   []int
+}
+
+type WsMessage struct {
+	UserID    int
+	UserEmail string
+	UserName  string
+	ServerID  int
+	ChannelID int
+	Message   string
+}
+
 type Service interface {
 	CreateServer(ctx context.Context, req *CreateServerReq, gctx *gin.Context) (*CreateServerRes, error)
-	GetServerByEmail(ctx context.Context, gctx *gin.Context) (*GetServerRes, error)
+	GetServer(ctx context.Context, gctx *gin.Context) (*GetServerRes, error)
 	JoinServer(ctx context.Context, req *JoinServerReq, gctx *gin.Context) (*JoinServerRes, error)
 	CreateChannel(ctx context.Context, req *CreateChannelReq, server_id int) (*CreateChannelRes, error)
 	GetChannel(ctx context.Context, server_id int) (*GetChannelRes, error)
 	GetMember(ctx context.Context, server_id int) (*GetMemberRes, error)
-	CreateMsg(ctx context.Context, req *CreateMsgReq, gctx *gin.Context) (*CreateMsgRes, error)
 	GetHistorysMsg(ctx context.Context, req *GetHistorysMsgReq) (*GetHistorysMsgRes, error)
+	WsGetClientInfo(ctx *gin.Context, userId int) (*GetWsClientInfoRes, error)
+	WsSendMessage(ctx *gin.Context, msg WsMessage) error
 }
 
 type Respository interface {
@@ -90,6 +106,7 @@ type Respository interface {
 	CreateChannel(ctx context.Context, channel_name string, server_id int) (int, string, error)
 	GetChannel(ctx context.Context, server_id int) (map[int]string, error)
 	GetMember(ctx context.Context, server_id int) (map[string]string, error)
-	CreateMsg(ctx context.Context, channel_id int, user_id int, time time.Time, message string) (Msg, error)
 	GetHistorysMsg(ctx context.Context, channel_id int) ([]Msg, error)
+	WsGetClientInfo(ctx context.Context, user_id int) (string, string, []int, error)
+	WsSendMessage(ctx context.Context, msg WsMessage) error
 }

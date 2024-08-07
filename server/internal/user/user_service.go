@@ -101,6 +101,7 @@ func (s *service) Login(ctx context.Context, req *LoginUserReq) (*LoginUserRes, 
 	return &LoginUserRes{
 		accessToken: ss,
 		Username:    u.Username,
+		UserID:      u.ID,
 		Email:       u.Email,
 	}, nil
 }

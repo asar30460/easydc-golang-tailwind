@@ -3,7 +3,7 @@
 ## 簡介
 
 簡易版的 Discord，前端與後端透過 RESTful API 請求接收，SQL 驅動使用 MaridDB，首次搭建環境可以使用專案底下的[Migration File](./server/db/migrations/20240703114440_add_schema_tables.up.sql) UP 一次建立所需資料表。系統功能如下列表陳列，後端一項功能開發完成後先以 Postman 測試結果，確認運作正確再銜接前端。
-| 功能 | Server | Client |
+| 預計開發功能 | 後端已實現 | 前端已實現 |
 | ------------- | ------------- | ------------- |
 | 建立使用者 | :white_check_mark: | :white_check_mark: |
 | 登入 | :white_check_mark: | :white_check_mark: |
@@ -14,10 +14,13 @@
 | 建立頻道 | :white_check_mark: | |
 | 取得伺服器頻道 | :white_check_mark: | :white_check_mark: |
 | 取得伺服器成員 | :white_check_mark: | :white_check_mark: |
-| 傳送訊息 | :white_check_mark: | |
+| 傳送訊息 | :white_check_mark: | :white_check_mark: |
 | 取得頻道訊息 | :white_check_mark: | :white_check_mark: |
+| 搜尋伺服器 | | |
 
-### 網站結構(JSX Component)
+### 網站結構(User Perspective & JSX Component)
+
+<img alt="sysArchi_user perspect" src="./server/previews/sysArchi_user perspect.png">
 
     |───EasyDC
     |   |───登入
@@ -39,6 +42,9 @@
 2. WebSocket 完成一對多連線
 3. JWT 驗證
 4. Gin context(JSON)、Goroutine
+
+<b>系統架構 DEV Perspective</b>
+<img alt="sysArchi_dev perspect" src="./server/previews/sysArchi_dev perspect.png">
 
 ## 預覽畫面
 
